@@ -1,0 +1,12 @@
+cloudscraper==1.2.68
+selenium==4.13.0
+moviepy==1.0.3
+requests==2.31.0
+beautifulsoup4==4.12.2
+python-dotenv==1.0.0
+yt-dlp==2023.11.16
+ffmpeg-python==0.2.0
+pillow==10.1.0  # نسخه پایدار جدید
+opencv-python-headless==4.8.1.78
+numpy==1.26.4
+webdriver-manager==4.0.2
