@@ -22,11 +22,9 @@ class YouTubeUploader:
                 lambda d: d.execute_script("return document.readyState") == "complete"
             )
             
-            # حذف تمام کوکی‌های موجود
             driver.delete_all_cookies()
             time.sleep(2)
             
-            # اضافه کردن کوکی‌های جدید با کنترل خطا
             for cookie in cookies:
                 try:
                     if 'expiry' in cookie:
@@ -55,14 +53,12 @@ class YouTubeUploader:
                 lambda d: d.execute_script("return document.readyState") == "complete"
             )
             
-            # بررسی وجود آواتار کاربر یا عناصر مربوط به حساب
             elements = driver.find_elements(By.CSS_SELECTOR, "img#img")
             print(f"[DEBUG] Avatar elements found: {len(elements)}")
             if len(elements) > 0:
                 print("[INFO] Login verified successfully")
                 return True
             
-            # روش جایگزین: بررسی وجود منوی حساب
             account_menu = driver.find_elements(By.XPATH, "//a[contains(@href, 'account')]")
             print(f"[DEBUG] Account menu elements found: {len(account_menu)}")
             return len(account_menu) > 0
@@ -80,7 +76,7 @@ class YouTubeUploader:
             try:
                 # تنظیمات پیشرفته کروم
                 options = Options()
-                options.add_argument("--headless=chrome")  # استفاده از headless mode پایدار
+                options.add_argument("--headless=chrome")
                 options.add_argument("--no-sandbox")
                 options.add_argument("--disable-dev-shm-usage")
                 options.add_argument("--window-size=1920,1080")
@@ -88,36 +84,44 @@ class YouTubeUploader:
                 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 options.add_argument("--disable-extensions")
                 options.add_argument("--disable-gpu")
+                options.add_argument("--disable-features=NetworkService,NetworkServiceInProcess")
+                options.add_argument("--ignore-certificate-errors")
+                options.add_argument("--no-zygote")
                 options.add_experimental_option("excludeSwitches", ["enable-automation"])
                 options.add_experimental_option("useAutomationExtension", False)
                 
-                # راه‌اندازی درایور
                 service = Service(ChromeDriverManager().install())
                 driver = webdriver.Chrome(service=service, options=options)
                 driver.implicitly_wait(30)
                 
-                # 1. احراز هویت
                 if not (YouTubeUploader.load_cookies(driver) and YouTubeUploader.check_login(driver)):
                     raise Exception("❌ احراز هویت ناموفق بود")
                 
-                # 2. رفتن به صفحه آپلود
                 print("🔵 در حال بارگذاری صفحه آپلود...")
                 driver.get(Config.YT_UPLOAD_URL)
                 WebDriverWait(driver, 120).until(
                     lambda d: d.execute_script("return document.readyState") == "complete"
                 )
+                os.makedirs("screenshots", exist_ok=True)
+                driver.save_screenshot(f"screenshots/pre_upload_{int(time.time())}.png")
+                with open(f"screenshots/pre_upload_page_{int(time.time())}.html", "w", encoding="utf-8") as f:
+                    f.write(driver.page_source)
                 
-                # 3. آپلود فایل
                 print("📤 در حال آپلود ویدیو...")
-                file_input = WebDriverWait(driver, 90).until(
-                    EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[type="file"][accept*="video/*"]'))
-                )
+                try:
+                    file_input = WebDriverWait(driver, 90).until(
+                        EC.visibility_of_element_located((By.XPATH, '//input[@type="file"]'))
+                    )
+                except:
+                    print("⚠️ تلاش برای یافتن input فایل با روش جایگزین...")
+                    file_input = WebDriverWait(driver, 90).until(
+                        EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[type="file"], [role="button"][aria-label*="Upload"]'))
+                    )
                 if not file_input.is_enabled():
                     raise Exception("File input is not enabled")
                 file_input.send_keys(os.path.abspath(video_path))
-                time.sleep(20)  # زمان برای تکمیل آپلود
+                time.sleep(20)
                 
-                # 4. تنظیم عنوان
                 print("✏️ در حال تنظیم عنوان...")
                 try:
                     title_field = WebDriverWait(driver, 30).until(
@@ -133,7 +137,6 @@ class YouTubeUploader:
                     title_field.clear()
                     title_field.send_keys(title)
                 
-                # 5. تنظیم توضیحات
                 print("📝 در حال تنظیم توضیحات...")
                 desc_field = WebDriverWait(driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, '//div[@id="description-textarea"]//textarea'))
@@ -142,7 +145,6 @@ class YouTubeUploader:
                 desc_field.send_keys(description)
                 time.sleep(3)
                 
-                # 6. کلیک روی دکمه‌های بعدی
                 for step in range(3):
                     print(f"[DEBUG] Clicking next button, step {step + 1}")
                     next_btn = WebDriverWait(driver, 30).until(
@@ -151,7 +153,6 @@ class YouTubeUploader:
                     next_btn.click()
                     time.sleep(5)
                 
-                # 7. انتشار نهایی
                 print("🚀 در حال انتشار ویدیو...")
                 publish_btn = WebDriverWait(driver, 30).until(
                     EC.element_to_be_clickable((By.XPATH, '//ytcp-button[@id="done-button"]'))
