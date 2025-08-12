@@ -19,7 +19,7 @@ jobs:
           python-version: "3.10"
           cache: 'pip'
 
-      - name: نصب و تنظیم پیش‌نیازها
+      - name: نصب پیش‌نیازهای سیستم
         run: |
           sudo apt-get update -y
           sudo apt-get install -y \
@@ -42,21 +42,17 @@ jobs:
             chromium-browser \
             chromium-chromedriver
 
-          # ایجاد مسیرهای مورد نیاز
+          # تنظیمات کرومیوم
           sudo mkdir -p /home/runner/snap/chromium/common/.cache
           sudo touch /home/runner/snap/chromium/common/.cache/desktop-runtime-date
           sudo chmod -R 777 /home/runner/snap
-
-          # تنظیم chromium به عنوان chrome
-          sudo rm -f /usr/bin/google-chrome || true
-          sudo ln -s /usr/bin/chromium-browser /usr/bin/google-chrome
-          sudo chmod +x /usr/bin/google-chrome
+          sudo ln -sf /usr/bin/chromium-browser /usr/bin/google-chrome
 
       - name: نصب وابستگی‌های پایتون
         run: |
           python -m pip install --upgrade pip
           pip install --force-reinstall -r requirements.txt
-          pip install webdriver-manager==4.0.2 selenium==4.13.0
+          pip install webdriver-manager==4.0.2 selenium==4.13.0 yt-dlp==2023.11.16
 
       - name: اجرای اسکریپت اصلی
         env:
@@ -68,7 +64,7 @@ jobs:
           Xvfb :99 -screen 0 1920x1080x24 > xvfb.log 2>&1 &
           sleep 30
           export DISPLAY=:99
-          timeout 110m python main.py || (echo "خطا در اجرای اسکریپت" && exit 1)
+          python main.py
 
       - name: ذخیره لاگ‌های دیباگ
         if: always()
