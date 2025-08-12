@@ -4,31 +4,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # Telegram
+    # تنظیمات تلگرام
     CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")
     if not CHANNEL_USERNAME:
-        raise ValueError("❌ CHANNEL_USERNAME not set in .env")
+        raise ValueError("❌ نام کانال تلگرام تنظیم نشده")
     
-    # YouTube
+    # تنظیمات یوتیوب
     YT_UPLOAD_URL = os.getenv("YT_UPLOAD_URL", "https://studio.youtube.com")
+    YT_LOGIN_URL = os.getenv("YT_LOGIN_URL", "https://youtube.com")
     YT_COOKIES = os.getenv("YT_COOKIES")
     if not YT_COOKIES:
-        raise ValueError("❌ YT_COOKIES not set in .env")
+        raise ValueError("❌ کوکی‌های یوتیوب تنظیم نشده‌اند")
     
-    # Processing
+    # تنظیمات پردازش
     OUTPUT_DIR = os.getenv("OUTPUT_DIR", "processed_videos")
-    MAX_RETRIES = int(os.getenv("MAX_RETRIES", 5))  # افزایش تعداد تلاش‌ها
-    DELAY_BETWEEN_ATTEMPTS = int(os.getenv("DELAY_BETWEEN_ATTEMPTS", 30))  # افزایش زمان انتظار
+    MAX_RETRIES = int(os.getenv("MAX_RETRIES", 5))
+    DELAY_BETWEEN_ATTEMPTS = int(os.getenv("DELAY_BETWEEN_ATTEMPTS", 30))
     
-    # Video Processing
+    # تنظیمات ویدیو
     TARGET_HEIGHT = int(os.getenv("TARGET_HEIGHT", 1920))
     TARGET_FPS = int(os.getenv("TARGET_FPS", 60))
     BITRATE = os.getenv("BITRATE", "8000k")
     
-    # Metadata
+    # تنظیمات محتوا
     DEFAULT_TAGS = os.getenv("DEFAULT_TAGS", "شورت,طنز,میم,سرگرمی,ایرانی").split(",")
     CONTACT_INFO = os.getenv("CONTACT_INFO", "📌 پیج اینستاگرام: @example\n🌐 وبسایت: example.com")
     
-    # Selenium Settings
-    WEBDRIVER_TIMEOUT = int(os.getenv("WEBDRIVER_TIMEOUT", 45))
-    PAGE_LOAD_TIMEOUT = int(os.getenv("PAGE_LOAD_TIMEOUT", 60))
+    # تنظیمات سلنیوم
+    WEBDRIVER_TIMEOUT = int(os.getenv("WEBDRIVER_TIMEOUT", 60))
+    PAGE_LOAD_TIMEOUT = int(os.getenv("PAGE_LOAD_TIMEOUT", 120))
